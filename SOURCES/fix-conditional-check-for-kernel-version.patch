@@ -1,0 +1,26 @@
+Fix build using 4.19.0 kernel headers
+
+
+When using build-env docker container provided by xcp-ng, the original
+source code fails to build with this error:
+    /home/builder/rpmbuild/BUILD/r8152-2.18.1/compatibility.h:562:21: error: redefinition of 'skb_mark_not_on_list'
+    static inline void skb_mark_not_on_list(struct sk_buff *skb)
+
+It is because the kernel headers provided in build env are for 4.19.0 kernel,
+ even though system uses later patch version.
+This commit lowers the precision of the conditional check for kernel version to 4.19.0.
+
+Signed-off-by: Vasyl Solovei <iam@miltador.pro>
+diff --git a/compatibility.h b/compatibility.h
+index b33c894..d756a18 100644
+--- a/compatibility.h
++++ b/compatibility.h
+@@ -557,7 +557,7 @@
+ #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0) */
+ #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(4,10,0) */
+ #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0) */
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,10) && \
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0) && \
+     !(LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,217) && LINUX_VERSION_CODE < KERNEL_VERSION(4,15,0))
+        static inline void skb_mark_not_on_list(struct sk_buff *skb)
+        {
